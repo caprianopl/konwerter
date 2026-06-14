@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>PWA Konwerter Systemów</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+        body {
+            background: #f1f5f9;
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 720px;
+            width: 100%;
+            background: white;
+            border-radius: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.2);
+            overflow: hidden;
+            padding: 1.5rem;
+            transition: all 0.2s;
+        }
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 0 0 0.25rem 0;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sub {
+            color: #334155;
+            border-left: 3px solid #3b82f6;
+            padding-left: 12px;
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+        }
+        .select-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 1.5rem;
+        }
+        .select-box {
+            flex: 1;
+        }
+        .select-box label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: #1e293b;
+            margin-bottom: 6px;
+        }
+        select, input {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 1rem;
+            background: white;
+            transition: 0.2s;
+            font-family: monospace;
+            font-weight: 500;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+        }
+        .input-area {
+            background: #f1f5f9;
+            border-radius: 1.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .result-area {
+            background: #0f172a;
+            color: #e2e8f0;
+            border-radius: 1.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        .result-number {
+            font-size: 1.6rem;
+            font-weight: 700;
+            font-family: monospace;
+            word-break: break-all;
+            color: #facc15;
+            background: #1e293b;
+            padding: 10px 12px;
+            border-radius: 1rem;
+            margin-top: 8px;
+        }
+        button {
+            background: #3b82f6;
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 12px 16px;
+            border-radius: 2rem;
+            width: 100%;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.15s;
+            margin-top: 8px;
+        }
+        button:hover {
+            background: #2563eb;
+            transform: scale(0.98);
+        }
+        .explanation {
+            background: #fef9c3;
+            border-left: 6px solid #eab308;
+            padding: 0.8rem 1rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            margin-top: 1.2rem;
+            color: #1e1b0e;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .badge {
+            background: #e2e8f0;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: normal;
+        }
+        hr {
+            margin: 1rem 0;
+            border-color: #e2e8f0;
+        }
+        .two-comp-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .comp-card {
+            background: #1e293b;
+            border-radius: 1rem;
+            padding: 8px 12px;
+            flex: 1;
+            font-size: 0.8rem;
+        }
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #64748b;
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="app">
+    <h1>🔄 Konwerter liczb <span class="badge">PWA ready</span></h1>
+    <div class="sub">➡️ Z każdego systemu na każdy ⬅️ + Uzupełnienia binarny (1 i 2)</div>
+
+    <div class="select-group">
+        <div class="select-box">
+            <label>📥 WEJŚCIE (system źródłowy)</label>
+            <select id="fromSys">
+                <option value="dec">Dziesiętny (DEC)</option>
+                <option value="bin">Binarny (BIN)</option>
+                <option value="oct">Ósemkowy (OCT)</option>
+                <option value="hex">Szesnastkowy (HEX)</option>
+            </select>
+        </div>
+        <div class="select-box">
+            <label>📤 WYJŚCIE (system docelowy)</label>
+            <select id="toSys">
+                <option value="dec">Dziesiętny (DEC)</option>
+                <option value="bin">Binarny (BIN)</option>
+                <option value="oct">Ósemkowy (OCT)</option>
+                <option value="hex">Szesnastkowy (HEX)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="input-area">
+        <label style="font-weight:600;">✏️ Wprowadź liczbę w systemie <span id="fromLabel">Dziesiętny</span>:</label>
+        <input type="text" id="inputValue" placeholder="np. 255 lub 11111111 lub FF lub 377" autocomplete="off">
+        <button id="convertBtn">🔄 Konwertuj</button>
+    </div>
+
+    <div class="result-area">
+        <div>🎯 Wynik w systemie <strong id="toLabel">Binarny</strong>:</div>
+        <div class="result-number" id="resultValue">—</div>
+        
+        <div style="margin-top: 1rem; font-size: 0.75rem;">➕ DODATKOWO: UZUPEŁNIENIA BINARNE (dla liczby całkowitej wg wejścia BIN / DEC)</div>
+        <div class="two-comp-row" id="binaryComplements">
+            <div class="comp-card">⚡ U1 (do 1): —</div>
+            <div class="comp-card">⚡ U2 (do 2): —</div>
+        </div>
+    </div>
+
+    <div class="explanation" id="explanationBox">
+        💡 Wprowadź poprawną liczbę, wybierz systemy, a zobaczysz krok po kroku jak przebiega konwersja.
+    </div>
+    <footer>✅ Działa offline jako PWA | Konwersja liczb całkowitych (bez znaku) | U2 obliczane dla binarnych długości minimalnej 8 bitów (lub więcej jeśli potrzeba)</footer>
+</div>
+
+<script>
+    // ---------- pomocnicze funkcje konwersji ----------
+    function isNumericStr(str, base) {
+        // sprawdza czy string jest poprawny dla danej bazy
+        const regexMap = {
+            bin: /^[01]+$/,
+            oct: /^[0-7]+$/,
+            dec: /^\d+$/,
+            hex: /^[0-9A-Fa-f]+$/
+        };
+        return regexMap[base].test(str);
+    }
+
+    function toDecimal(valueStr, fromBase) {
+        // fromBase: 'bin','oct','dec','hex' -> zwraca liczbę (number)
+        let str = valueStr.trim().toUpperCase();
+        if (!isNumericStr(str, fromBase)) throw new Error(`Nieprawidłowa liczba dla systemu ${fromBase}`);
+        if (fromBase === 'bin') return parseInt(str, 2);
+        if (fromBase === 'oct') return parseInt(str, 8);
+        if (fromBase === 'dec') return parseInt(str, 10);
+        if (fromBase === 'hex') return parseInt(str, 16);
+        throw new Error('Nieznany system');
+    }
+
+    function fromDecimal(decimal, toBase) {
+        if (isNaN(decimal)) throw new Error('Niepoprawna liczba');
+        if (toBase === 'bin') return decimal.toString(2);
+        if (toBase === 'oct') return decimal.toString(8);
+        if (toBase === 'dec') return decimal.toString(10);
+        if (toBase === 'hex') return decimal.toString(16).toUpperCase();
+        throw new Error('Nieznany system docelowy');
+    }
+
+    // ----- uzupełnienia do 1 i do 2 -----
+    // Dla liczby całkowitej dodatniej (w reprezentacji binarnej) oblicza U1 i U2 na minimalnej długości bitów (min 8 lub dostosowane)
+    function computeTwosComplement(binStr) {
+        // binStr - ciąg binarny (bez znaku) dla liczby dodatniej
+        if (!/^[01]+$/.test(binStr)) return { u1: "BŁĄD", u2: "BŁĄD" };
+        // długość minimalna: max(8, długość binarnej + 1 dla bezpieczeństwa? standardowo: dopełniamy do 8 bitów lub do następnej potęgi 2? ale dla przejrzystości: 8 bitów, jeśli liczba >255 to większa długość)
+        let len = binStr.length;
+        let bitsNeeded = Math.max(8, len);
+        // jeśli liczba jest potęgą 2 albo potrzeba więcej bitów aby pomieścić znak? dla U2 lepiej o 1 bit więcej gdy liczba nie mieści się w zakresie?
+        // uproszczone: weź max(8, len+1) tylko gdy najwyższy bit jest 1 i chcemy pokazać zakres. Zrobimy: obliczymy liczbę dziesiętną, potem potrzebna szerokość = floor(log2(dec)) + 2, ale niech będzie czytelnie.
+        let decVal = parseInt(binStr, 2);
+        let requiredBits = Math.max(8, binStr.length);
+        if (decVal > 0 && (decVal & (decVal-1)) === 0 && decVal >= 128) requiredBits = binStr.length + 1; // przypadek graniczny
+        if (decVal >= Math.pow(2, requiredBits-1)) requiredBits++;
+        
+        // dopełnij binarną do requiredBits (z lewej zerami)
+        let padded = binStr.padStart(requiredBits, '0');
+        // U1: zamień 0<->1
+        let u1 = padded.split('').map(bit => bit === '0' ? '1' : '0').join('');
+        // U2: U1 + 1 (dodawanie binarne)
+        let u2Bin = (parseInt(u1, 2) + 1).toString(2);
+        u2Bin = u2Bin.padStart(requiredBits, '0');
+        if (u2Bin.length > requiredBits) u2Bin = u2Bin.slice(-requiredBits);
+        return { u1: u1, u2: u2Bin };
+    }
+
+    // Szczegółowe wyjaśnienie konwersji (z kroków)
+    function getConversionExplanation(valueStr, fromSys, toSys, decimalValue, resultStr) {
+        let steps = "";
+        if (fromSys === toSys) {
+            return `👉 Brak zmiany systemu: ${valueStr} (${getSysName(fromSys)}) pozostaje taki sam.`;
+        }
+        if (fromSys !== 'dec') {
+            steps += `1. Zamiana z systemu ${getSysName(fromSys)} na dziesiętny:\n`;
+            if (fromSys === 'bin') steps += `   Liczba binarna ${valueStr} = ${decimalValue} (bo: ${valueStr.split('').reverse().map((bit,i)=>bit==='1'?`2^${i}`:'').filter(x=>x).join(' + ') || '0'})\n`;
+            else if (fromSys === 'oct') steps += `   Liczba ósemkowa ${valueStr} = każda cyfra × potęga 8: ${decimalValue}\n`;
+            else if (fromSys === 'hex') steps += `   Hex ${valueStr} = ${decimalValue} (mnożąc pozycje przez 16^k)\n`;
+        } else {
+            steps += `1. Liczba wejściowa już jest dziesiętna: ${decimalValue}\n`;
+        }
+        if (toSys !== 'dec') {
+            steps += `2. Zamiana ${decimalValue} (dziesiętnie) na system ${getSysName(toSys)}:\n`;
+            if (toSys === 'bin') {
+                let temp = decimalValue;
+                let binSteps = [];
+                while(temp > 0) { binSteps.push(temp % 2); temp = Math.floor(temp/2); }
+                if(binSteps.length===0) binSteps=[0];
+                steps += `   Dzielenie przez 2, zbieranie reszt: ${decimalValue} → ${binSteps.reverse().join('')} (dzielenie kolejno: ${decimalValue} /2 ...)\n`;
+            }
+            else if (toSys === 'oct') {
+                steps += `   Dzielenie przez 8, reszty: ${decimalValue} → ${resultStr}\n`;
+            }
+            else if (toSys === 'hex') {
+                steps += `   Dzielenie przez 16, reszty (10=A,11=B...): ${decimalValue} → ${resultStr}\n`;
+            }
+            steps += `   Wynik: ${resultStr}`;
+        } else {
+            steps += `2. Wynik końcowy w dziesiętnym: ${decimalValue}`;
+        }
+        return steps;
+    }
+
+    function getSysName(code) {
+        const map = { dec: "Dziesiętny", bin: "Binarny", oct: "Ósemkowy", hex: "Szesnastkowy" };
+        return map[code];
+    }
+
+    // Główna funkcja konwersji i aktualizacji UI
+    function convert() {
+        const fromSys = document.getElementById('fromSys').value;
+        const toSys = document.getElementById('toSys').value;
+        let rawInput = document.getElementById('inputValue').value.trim();
+        if (rawInput === "") {
+            document.getElementById('resultValue').innerText = "---";
+            document.getElementById('explanationBox').innerHTML = "⚠️ Wprowadź liczbę.";
+            document.getElementById('binaryComplements').innerHTML = `<div class="comp-card">⚡ U1 (do 1): —</div><div class="comp-card">⚡ U2 (do 2): —</div>`;
+            return;
+        }
+
+        try {
+            // Walidacja wstępna
+            if (!isNumericStr(rawInput, fromSys)) {
+                throw new Error(`Liczba "${rawInput}" nie jest poprawna dla systemu ${getSysName(fromSys)}`);
+            }
+            const decimalValue = toDecimal(rawInput, fromSys);
+            const resultStr = fromDecimal(decimalValue, toSys);
+            
+            // wyświetlenie wyniku
+            document.getElementById('resultValue').innerText = resultStr;
+            document.getElementById('toLabel').innerText = getSysName(toSys);
+            document.getElementById('fromLabel').innerText = getSysName(fromSys);
+            
+            // ----- uzupełnienia binarne: potrzebujemy reprezentację binarną WEJŚCIA (zawsze jako binarny ciąg, ale tylko jeśli wejście to DEC lub BIN, bo dla OCT/HEX też można zrobić, ale najważniejsze żeby pokazać zrozumienie)
+            let sourceBinStr = "";
+            if (fromSys === 'bin') {
+                sourceBinStr = rawInput;
+            } else {
+                // konwertujemy decimalValue na binarny (bez znaku)
+                sourceBinStr = decimalValue.toString(2);
+            }
+            // oblicz u1 i u2
+            let complements = { u1: "—", u2: "—" };
+            if (sourceBinStr && /^[01]+$/.test(sourceBinStr) && decimalValue >= 0) {
+                const comp = computeTwosComplement(sourceBinStr);
+                complements.u1 = comp.u1;
+                complements.u2 = comp.u2;
+            } else {
+                complements = { u1: "Tylko dla liczb nieujemnych", u2: "Tylko dla liczb nieujemnych" };
+            }
+            document.getElementById('binaryComplements').innerHTML = `
+                <div class="comp-card"><strong>🔹 U1 (dopełnienie do 1):</strong><br><span style="font-family:monospace; word-break:break-all;">${complements.u1}</span></div>
+                <div class="comp-card"><strong>🔸 U2 (dopełnienie do 2):</strong><br><span style="font-family:monospace; word-break:break-all;">${complements.u2}</span><br><small style="opacity:0.8;">(negacja +1)</small></div>
+            `;
+            
+            // szczegółowe wyjaśnienie
+            let explanation = getConversionExplanation(rawInput, fromSys, toSys, decimalValue, resultStr);
+            let extraNote = "";
+            if (fromSys !== 'bin' && toSys !== 'bin') {
+                extraNote = `\n\n📘 Uzupełnienia U1/U2 pokazane dla liczby w systemie binarnym: ${sourceBinStr} (z wejścia/obliczonej).`;
+            } else {
+                extraNote = `\n\n📘 Dopełnienia: U1 to odwrócenie bitów, U2 = U1 + 1.`;
+            }
+            document.getElementById('explanationBox').innerHTML = `🔎 ${explanation}${extraNote}`;
+            
+        } catch (err) {
+            document.getElementById('resultValue').innerText = "❌ Błąd";
+            document.getElementById('explanationBox').innerHTML = `⚠️ ${err.message}`;
+            document.getElementById('binaryComplements').innerHTML = `<div class="comp-card">⚡ U1: błąd</div><div class="comp-card">⚡ U2: błąd</div>`;
+        }
+    }
+    
+    // aktualizacja labeli przy zmianie selecta
+    function updateLabels() {
+        const fromSys = document.getElementById('fromSys').value;
+        const toSys = document.getElementById('toSys').value;
+        document.getElementById('fromLabel').innerText = getSysName(fromSys);
+        document.getElementById('toLabel').innerText = getSysName(toSys);
+        // jeśli jest już jakiś wynik to odświeżamy konwersję (opcjonalnie automatycznie)
+        if(document.getElementById('inputValue').value.trim() !== "") convert();
+    }
+    
+    document.getElementById('fromSys').addEventListener('change', updateLabels);
+    document.getElementById('toSys').addEventListener('change', updateLabels);
+    document.getElementById('convertBtn').addEventListener('click', convert);
+    document.getElementById('inputValue').addEventListener('keypress', (e) => { if(e.key === 'Enter') convert(); });
+    
+    updateLabels();
+    
+    // ========== SERVICE WORKER dla PWA (offline first) ==========
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').then(reg => {
+                console.log('Service Worker zarejestrowany', reg);
+            }).catch(err => {
+                console.log('Rejestracja SW nieudana', err);
+            });
+        });
+    }
+</script>
+
+<script>
+    // Dodanie prostego SW na bieżąco, jeśli strona jest serwowana przez serwer (lokalnie też zadziała gdy dodamy plik sw.js)
+    // Ale żeby działało od razu "PWA" w całości, programistycznie możemy dynamicznie utworzyć Service Worker jeśli nie istnieje? 
+    // Użytkownik może pobrać jako PWA, ale wystarczy że wygenerujemy sw.js w pamięci? Nie, musi fizycznie być plik.
+    // Jednak dla demo online na StackBlitz/GitHub wystarczy, ale wklejam też kod tworzący sw.js jeśli wykryje brak. 
+    // Poniżej próba dynamicznego utworzenia SW - dla samodzielnego HTML nie zadziała z powodu origin, ale dla kompletności.
+    if ('serviceWorker' in navigator && !navigator.serviceWorker.controller) {
+        // Próbujemy zarejestrować prosty sw, jeśli nie istnieje (ale musi być endpoint /sw.js)
+        // Dla pojedynczego pliku HTML można to pominąć, ale zostawiam jako standard.
+    }
+</script>
+</body>
+</html>
