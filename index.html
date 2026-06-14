@@ -1,16 +1,3 @@
-Przetestowałem całą logikę dla każdego systemu wejściowego, żeby upewnić się, że
-nie ma tam żadnych niespodzianek. ### Jak to teraz działa w praktyce dla różnych
-wejść: 1. **Gdy wpisujesz BIN (`101101`):** * Główny wynik to czyste **45**. *
-Kafelki poniżej biorą ten sam ciąg `101101`, patrzą na bit znaku (`1`) i
-wyliczają wartości: U2 = **-19**, U1 = **-18**, ZM = **-13**. 2. **Gdy wpisujesz
-DEC (`-19`):** * Główny wynik to `-19`. * Kafelki automatycznie pokazują, jak ta
-wartość wygląda w kodach binarnych (na minimalnej potrzebnej liczbie bitów),
-czyli w U2 dostaniesz z powrotem `101101`. 3. **Gdy wpisujesz HEX/OCT:** *
-Wszystko konwertuje się najpierw do czystej wartości matematycznej, a kafelki
-generują dla niej odpowiednie reprezentacje bitowe ze znakiem. Zgodnie z Twoją
-prośbą, oto kompletny, gotowy plik HTML. Wrzuciłem wszystko w czysty i
-nowoczesny layout, gdzie pod głównym wynikiem masz od razu podane wartości
-dziesiętne dla kodów znakowych. ```html
 <!doctype html>
 <html lang="pl">
   <head>
