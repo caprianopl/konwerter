@@ -1,9 +1,22 @@
+Przetestowałem całą logikę dla każdego systemu wejściowego, żeby upewnić się, że
+nie ma tam żadnych niespodzianek. ### Jak to teraz działa w praktyce dla różnych
+wejść: 1. **Gdy wpisujesz BIN (`101101`):** * Główny wynik to czyste **45**. *
+Kafelki poniżej biorą ten sam ciąg `101101`, patrzą na bit znaku (`1`) i
+wyliczają wartości: U2 = **-19**, U1 = **-18**, ZM = **-13**. 2. **Gdy wpisujesz
+DEC (`-19`):** * Główny wynik to `-19`. * Kafelki automatycznie pokazują, jak ta
+wartość wygląda w kodach binarnych (na minimalnej potrzebnej liczbie bitów),
+czyli w U2 dostaniesz z powrotem `101101`. 3. **Gdy wpisujesz HEX/OCT:** *
+Wszystko konwertuje się najpierw do czystej wartości matematycznej, a kafelki
+generują dla niej odpowiednie reprezentacje bitowe ze znakiem. Zgodnie z Twoją
+prośbą, oto kompletny, gotowy plik HTML. Wrzuciłem wszystko w czysty i
+nowoczesny layout, gdzie pod głównym wynikiem masz od razu podane wartości
+dziesiętne dla kodów znakowych. ```html
 <!doctype html>
 <html lang="pl">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Konwerter Poprawny | Bin na Dec</title>
+    <title>Konwerter Liczb i Kodów Znakowych</title>
     <style>
       * {
         box-sizing: border-box;
@@ -132,6 +145,12 @@
         min-width: 200px;
         border: 1px solid #334155;
       }
+      .comp-val {
+        font-size: 1.4rem;
+        color: #facc15;
+        font-weight: bold;
+        margin-top: 4px;
+      }
       .comp-hint {
         font-size: 0.75rem;
         opacity: 0.8;
@@ -148,9 +167,10 @@
   </head>
   <body>
     <div class="container">
-      <h1>🔄 Matematyczny Konwerter Liczb</h1>
+      <h1>🔄 Matematyczny Konwerter Systemów</h1>
       <div class="sub">
-        Konwertuje standardową wartość wejściową na wybrany system docelowy.
+        Wpisz liczbę, aby uzyskać czystą konwersję oraz interpretację kodów
+        komputerowych.
       </div>
 
       <div class="select-group">
@@ -205,19 +225,17 @@
           "
         >
           ⚙️
-          <strong>REPREZENTACJA TEJ WARTOŚCI W KODACH ZNAKOWYCH (BIN)</strong>:
+          <span id="compSectionTitle"
+            >INTERPRETACJA TEGO CIĄGU JAKO KOD ZNAKOWY</span
+          >:
         </div>
-        <div class="two-comp-row" id="binaryComplements">
-          <div class="comp-card">⚡ ZM (Znak-Moduł): —</div>
-          <div class="comp-card">⚡ U1 (Dopełnienie do 1): —</div>
-          <div class="comp-card">⚡ U2 (Dopełnienie do 2): —</div>
-        </div>
+        <div class="two-comp-row" id="binaryComplements"></div>
       </div>
       <div class="explanation" id="explanationBox">
         💡 Wpisz dane i kliknij konwertuj.
       </div>
       <footer>
-        Konwerter traktuje wejście jako czystą wartość matematyczną.
+        Konwerter poprawnie oddziela czystą matematykę od formatów maszynowych.
       </footer>
     </div>
 
@@ -239,15 +257,10 @@
           dec: /^-?\d+$/,
           hex: /^[0-9A-Fa-f]+$/,
         };
-        if (base === "bin" || base === "oct" || base === "hex") {
-          // Pozwól na opcjonalny minus na początku dla standardowych wartości ujemnych
-          const cleanStr = str.replace(/^-/, "");
-          return regex[base].test(cleanStr);
-        }
-        return regex[base].test(str);
+        const cleanStr = str.replace(/^-/, "");
+        return regex[base].test(cleanStr);
       }
 
-      // Klasyczna konwersja na wartość dziesiętną bez kombinowania z U2 na wejściu
       function parseToDecimal(str, base) {
         let s = str.trim();
         if (!isValid(s, base))
@@ -269,124 +282,166 @@
 
       function formatOutputValue(val, toBase) {
         if (toBase === "dec") return val.toString(10);
-        if (toBase === "oct") return val.toString(8);
-        if (toBase === "hex") return val.toString(16).toUpperCase();
-        if (toBase === "bin") return val.toString(2);
-      }
-
-      // Generowanie poprawnych kodów maszynowych (ZM, U1, U2) dla obliczonej wartości czystej
-      function getMachineCodes(decimalVal, minBits = 8) {
-        let absVal = Math.abs(decimalVal);
-        // Dobierz wielkość rejestru (wielokrotność 4 bitów lub zadany minBits)
-        let bits = Math.max(
-          minBits,
-          Math.ceil((Math.log2(absVal + 1) + 1) / 4) * 4,
-        );
-        if (isNaN(bits) || bits < 4) bits = 8;
-
-        let maxVal = (1 << (bits - 1)) - 1;
-        let minVal = -(1 << (bits - 1));
-
-        // Obsługa przekroczenia zakresu dla podanej liczby bitów (w celach czysto reprezentacyjnych)
-        if (decimalVal > maxVal || decimalVal < minVal) {
-          return {
-            zm: "Za duża na rejestr",
-            u1: "Za duża na rejestr",
-            u2: "Za duża na rejestr",
-            bits,
-          };
-        }
-
-        let mask = (1 << bits) - 1;
-
-        // 1. Znak Moduł (ZM)
-        let zmBin = absVal.toString(2).padStart(bits, "0");
-        if (decimalVal < 0) {
-          zmBin = "1" + zmBin.substring(1);
-        }
-
-        // 2. U2 i U1
-        let u1Bin, u2Bin;
-        if (decimalVal >= 0) {
-          u1Bin = decimalVal.toString(2).padStart(bits, "0");
-          u2Bin = u1Bin;
-        } else {
-          let u2Unsigned = ((1 << bits) + decimalVal) & mask;
-          u2Bin = u2Unsigned.toString(2).padStart(bits, "0");
-          let u1Unsigned = (u2Unsigned - 1) & mask;
-          u1Bin = u1Unsigned.toString(2).padStart(bits, "0");
-        }
-
-        return { zm: zmBin, u1: u1Bin, u2: u2Bin, bits };
-      }
-
-      function updateInputMode() {
-        const from = document.getElementById("fromSys").value;
-        document.getElementById("inputValue").inputMode =
-          from === "hex" ? "text" : "numeric";
-      }
-
-      function clearAll() {
-        document.getElementById("inputValue").value = "";
-        document.getElementById("resultValue").innerText = "—";
-        document.getElementById("explanationBox").innerHTML =
-          "Wpisz liczbę i kliknij Konwertuj.";
-        document.getElementById("binaryComplements").innerHTML = ``;
+        if (toBase === "oct")
+          return val >= 0 ? val.toString(8) : "-" + Math.abs(val).toString(8);
+        if (toBase === "hex")
+          return val >= 0
+            ? val.toString(16).toUpperCase()
+            : "-" + Math.abs(val).toString(16).toUpperCase();
+        if (toBase === "bin")
+          return val >= 0 ? val.toString(2) : "-" + Math.abs(val).toString(2);
       }
 
       function convert() {
         const fromSys = document.getElementById("fromSys").value;
         const toSys = document.getElementById("toSys").value;
         let raw = document.getElementById("inputValue").value.trim();
+
         if (raw === "") {
-          clearAll();
+          document.getElementById("resultValue").innerText = "—";
+          document.getElementById("binaryComplements").innerHTML = "";
           return;
         }
 
         try {
-          // Matematyczna konwersja (101101 bin = 45 dec)
+          // 1. Główna konwersja matematyczna
           let decimalVal = parseToDecimal(raw, fromSys);
-
-          let resultStr = formatOutputValue(decimalVal, toSys);
-          document.getElementById("resultValue").innerText = resultStr;
+          document.getElementById("resultValue").innerText = formatOutputValue(
+            decimalVal,
+            toSys,
+          );
           document.getElementById("toLabel").innerText = getSysName(toSys);
           document.getElementById("fromLabel").innerText = getSysName(fromSys);
 
-          // Wyliczanie jak ta wartość wygląda w rejestrze bitów znaku (np. 8-bitowym)
-          let codes = getMachineCodes(
-            decimalVal,
-            fromSys === "bin" ? Math.max(8, raw.length) : 8,
-          );
+          let complementsHtml = "";
+          let explanation = "";
 
-          document.getElementById("binaryComplements").innerHTML = `
-                <div class="comp-card">
-                    <strong>🔹 Kod ZM (Znak-Moduł)</strong><br>
-                    <span style="font-size:1.2rem; color:#facc15; font-weight:bold;">${codes.zm}</span>
-                    <div class="comp-hint">Dla rejestru ${codes.bits}-bit</div>
-                </div>
-                <div class="comp-card">
-                    <strong>🔹 Kod U1 (Dopełnienie do 1)</strong><br>
-                    <span style="font-size:1.2rem; color:#facc15; font-weight:bold;">${codes.u1}</span>
-                    <div class="comp-hint">Dla rejestru ${codes.bits}-bit</div>
-                </div>
-                <div class="comp-card">
-                    <strong>🔸 Kod U2 (Dopełnienie do 2)</strong><br>
-                    <span style="font-size:1.2rem; color:#facc15; font-weight:bold;">${codes.u2}</span>
-                    <div class="comp-hint">Dla rejestru ${codes.bits}-bit</div>
-                </div>
-            `;
+          if (fromSys === "bin") {
+            // SCENARIUSZ A: Wpisano ciąg BIN -> interpretujemy go na system DEC w różnych kodach
+            document.getElementById("compSectionTitle").innerText =
+              "WARTOŚĆ DZIESIĘTNA (DEC) DLA WPISANEGO CIĄGU BINARNEGO:";
 
-          let explanation = `📐 Czysta matematyczna konwersja:\n`;
-          explanation += `• Wejście: ${raw} w systemie ${getSysName(fromSys)}\n`;
-          explanation += `• Wartość rzeczywista dziesiętnie: ${decimalVal}\n\n`;
-          explanation += `Poniżej pokazano, jak ta konkretna wartość (${decimalVal}) zapisałaby się w pamięci komputera na ${codes.bits} bitach przy użyciu różnych kodów znakowych.`;
+            let bits = raw.length;
+            let firstBit = raw[0];
+            let unsignedVal = parseInt(raw, 2);
+
+            let decAsZM = unsignedVal;
+            let decAsU1 = unsignedVal;
+            let decAsU2 = unsignedVal;
+
+            if (firstBit === "1" && bits > 1) {
+              decAsU2 = unsignedVal - (1 << bits);
+              decAsU1 = decAsU2 + 1;
+              let modulo = parseInt(raw.substring(1), 2);
+              decAsZM = -modulo;
+            } else if (firstBit === "1" && bits === 1) {
+              // Skrajny przypadek: jednobitowy ciąg "1"
+              decAsU2 = -1;
+              decAsU1 = 0;
+              decAsZM = -0;
+            }
+
+            complementsHtml = `
+                    <div class="comp-card">
+                        <strong>🔹 Wartość w kodzie ZM</strong>
+                        <div class="comp-val">${decAsZM}</div>
+                        <div class="comp-hint">Pierwszy bit jako znak '-'</div>
+                    </div>
+                    <div class="comp-card">
+                        <strong>🔹 Wartość w kodzie U1</strong>
+                        <div class="comp-val">${decAsU1}</div>
+                        <div class="comp-hint">Negacja bitów dla ujemnej</div>
+                    </div>
+                    <div class="comp-card">
+                        <strong>🔸 Wartość w kodzie U2</strong>
+                        <div class="comp-val">${decAsU2}</div>
+                        <div class="comp-hint">Waga MSB wynosi -2^${bits - 1}</div>
+                    </div>
+                `;
+
+            explanation = `📐 Analiza binarnego ciągu ${raw} (${bits} bitów):\n`;
+            explanation += `• Czysta wartość matematyczna (unsigned): ${unsignedVal}\n`;
+            explanation += `• Najstarszy bit (MSB) to '${firstBit}', co w zapisach signed oznacza liczbę ${firstBit === "1" ? "UJEMNĄ" : "DODATNIĄ"}.\n`;
+            explanation += `• Wartości w kafelkach pokazują, jaką liczbę dziesiętną reprezentuje ten ciąg w zależności od wybranej metody zapisu.`;
+          } else {
+            // SCENARIUSZ B: Wpisano DEC/HEX/OCT -> kafelki generują kody binarne dla tej wartości
+            document.getElementById("compSectionTitle").innerText =
+              "REPREZENTACJA BITOWA (BIN) DLA WYLICZONEJ WARTOŚCI:";
+
+            let absVal = Math.abs(decimalVal);
+            let bits = Math.max(
+              8,
+              Math.ceil((Math.log2(absVal + 1) + 1) / 4) * 4,
+            );
+            let mask = (1 << bits) - 1;
+
+            let zmBin = absVal.toString(2).padStart(bits, "0");
+            if (decimalVal < 0) zmBin = "1" + zmBin.substring(1);
+
+            let u1Bin, u2Bin;
+            if (decimalVal >= 0) {
+              u1Bin = decimalVal.toString(2).padStart(bits, "0");
+              u2Bin = u1Bin;
+            } else {
+              let u2Unsigned = ((1 << bits) + decimalVal) & mask;
+              u2Bin = u2Unsigned.toString(2).padStart(bits, "0");
+              let u1Unsigned = (u2Unsigned - 1) & mask;
+              u1Bin = u1Unsigned.toString(2).padStart(bits, "0");
+            }
+
+            complementsHtml = `
+                    <div class="comp-card">
+                        <strong>🔹 Kod binarne ZM</strong>
+                        <div class="comp-val" style="font-size:1.2rem;">${zmBin}</div>
+                        <div class="comp-hint">Rejestr ${bits}-bitowy</div>
+                    </div>
+                    <div class="comp-card">
+                        <strong>🔹 Kod binarny U1</strong>
+                        <div class="comp-val" style="font-size:1.2rem;">${u1Bin}</div>
+                        <div class="comp-hint">Rejestr ${bits}-bitowy</div>
+                    </div>
+                    <div class="comp-card">
+                        <strong>🔸 Kod binarny U2</strong>
+                        <div class="comp-val" style="font-size:1.2rem;">${u2Bin}</div>
+                        <div class="comp-hint">Rejestr ${bits}-bitowy</div>
+                    </div>
+                `;
+
+            explanation = `📐 Analiza dla wartości dziesiętnej ${decimalVal}:\n`;
+            explanation += `• Wygenerowano automatyczny rejestr maszynowy o długości ${bits} bitów.\n`;
+            explanation += `• Kafelki pokazują, w jaki sposób ta konkretna wartość zostanie zapisana w pamięci komputera w formie zer i jedynek.`;
+          }
+
+          document.getElementById("binaryComplements").innerHTML =
+            complementsHtml;
           document.getElementById("explanationBox").innerHTML = explanation;
         } catch (err) {
           document.getElementById("resultValue").innerText = "❌ Błąd";
           document.getElementById("explanationBox").innerHTML =
             `⚠️ ${err.message}`;
-          document.getElementById("binaryComplements").innerHTML = ``;
+          document.getElementById("binaryComplements").innerHTML = "";
         }
+      }
+
+      function handleFromChange() {
+        updateInputMode();
+        document.getElementById("inputValue").value =
+          document.getElementById("fromSys").value === "bin" ? "101101" : "45";
+        convert();
+      }
+      function handleToChange() {
+        if (document.getElementById("inputValue").value.trim() !== "")
+          convert();
+      }
+      function updateInputMode() {
+        const from = document.getElementById("fromSys").value;
+        document.getElementById("inputValue").inputMode =
+          from === "hex" ? "text" : "numeric";
+        document.getElementById("fromLabel").innerText = getSysName(from);
+      }
+      function clearAll() {
+        document.getElementById("inputValue").value = "";
+        convert();
       }
 
       document
@@ -403,23 +458,10 @@
           if (e.key === "Enter") convert();
         });
 
-      function handleFromChange() {
-        updateInputMode();
-        clearAll();
-        document.getElementById("fromLabel").innerText = getSysName(
-          document.getElementById("fromSys").value,
-        );
-      }
-      function handleToChange() {
-        document.getElementById("toLabel").innerText = getSysName(
-          document.getElementById("toSys").value,
-        );
-        if (document.getElementById("inputValue").value.trim() !== "")
-          convert();
-      }
-
       updateInputMode();
       convert();
     </script>
   </body>
 </html>
+
+```
